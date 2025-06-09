@@ -80,7 +80,7 @@ dns:
 proxy-providers:
   Airport1:
     type: http
-    url: "你的机场订阅地址"
+    url: "http://107.151.244.119/api/v1/client/subscribe?token=6b73129228a9f18dbce28855f1e54e48"
     interval: 86400
     health-check:
       enable: true
