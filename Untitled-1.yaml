@@ -1,0 +1,181 @@
+ # =========================
+# 端口设置
+# =========================
+mixed-port: 7890
+socks-port: 7891
+redir-port: 7892
+tproxy-port: 7893
+
+# =========================
+# 控制面板与 UI
+# =========================
+external-controller: 0.0.0.0:9090
+secret: ""
+external-ui: "/etc/mihomo/run/ui"
+external-ui-name: zashboard
+external-ui-url: "https://github.com/Zephyruso/zashboard/archive/refs/heads/gh-pages.zip"
+
+# =========================
+# 基础设置
+# =========================
+allow-lan: true
+bind-address: "*"
+ipv6: false
+unified-delay: true
+tcp-concurrent: true
+log-level: warning
+find-process-mode: strict
+global-client-fingerprint: chrome
+
+# =========================
+# TUN 模式
+# =========================
+tun:
+  enable: true
+  stack: system
+  auto-route: true
+  auto-redirect: true
+  auto-detect-interface: true
+  dns-hijack:
+    - any:53
+    - tcp://any:53
+
+# =========================
+# DNS 设置
+# =========================
+dns:
+  enable: true
+  listen: 0.0.0.0:1053
+  ipv6: false
+  enhanced-mode: fake-ip
+  fake-ip-range: 28.0.0.1/8
+  fake-ip-filter:
+    - "*.lan"
+    - "*.local"
+    - "+.msftconnecttest.com"
+    - "+.msftncsi.com"
+    - "time.*.com"
+    - "*.steampowered.com"
+    - "*.steamcontent.com"
+    - "*.steamstatic.com"
+    - "*.epicgames.com"
+    - "*.battle.net"
+    - "*.blizzard.com"
+  default-nameserver:
+    - 223.5.5.5
+    - 119.29.29.29
+  nameserver:
+    - https://dns.alidns.com/dns-query
+    - https://doh.pub/dns-query
+  proxy-server-nameserver:
+    - https://dns.alidns.com/dns-query
+  nameserver-policy:
+    "geosite:cn,apple-cn":
+      - 223.5.5.5
+      - 119.29.29.29
+
+# =========================
+# 节点订阅
+# =========================
+proxy-providers:
+  Airport1:
+    type: http
+    url: "你的机场订阅地址"
+    interval: 86400
+    health-check:
+      enable: true
+      url: https://www.gstatic.com/generate_204
+      interval: 300
+
+# =========================
+# 策略组
+# =========================
+proxy-groups:
+  - name: 🚀 节点选择
+    type: select
+    use:
+      - Airport1
+    proxies:
+      - DIRECT
+
+  - name: 🎯 全球直连
+    type: select
+    proxies:
+      - DIRECT
+      - 🚀 节点选择
+
+# =========================
+# 规则集 Rule Providers
+# =========================
+rule-providers:
+  geosite-cn:
+    type: http
+    behavior: domain
+    format: yaml
+    path: ./ruleset/geosite-cn.yaml
+    url: https://cdn.jsdelivr.net/gh/Loyalsoldier/clash-rules@release/cn.yaml
+    interval: 86400
+
+  geosite-gfw:
+    type: http
+    behavior: domain
+    format: yaml
+    path: ./ruleset/geosite-gfw.yaml
+    url: https://cdn.jsdelivr.net/gh/Loyalsoldier/clash-rules@release/gfw.yaml
+    interval: 86400
+
+  geoip-cn:
+    type: http
+    behavior: ipcidr
+    format: yaml
+    path: ./ruleset/geoip-cn.yaml
+    url: https://cdn.jsdelivr.net/gh/Loyalsoldier/clash-rules@release/cncidr.yaml
+    interval: 86400
+
+  steam_domain:
+    type: http
+    behavior: domain
+    format: yaml
+    path: ./ruleset/steam.yaml
+    url: https://cdn.jsdelivr.net/gh/Loyalsoldier/clash-rules@release/steam.yaml
+    interval: 86400
+
+  steam_ip:
+    type: http
+    behavior: ipcidr
+    format: yaml
+    path: ./ruleset/steam-ip.yaml
+    url: https://cdn.jsdelivr.net/gh/Loyalsoldier/clash-rules@release/steam-ip.yaml
+    interval: 86400
+
+  epic_domain:
+    type: http
+    behavior: domain
+    format: yaml
+    path: ./ruleset/epic.yaml
+    url: https://cdn.jsdelivr.net/gh/Loyalsoldier/clash-rules@release/epic.yaml
+    interval: 86400
+
+  battlenet_domain:
+    type: http
+    behavior: domain
+    format: yaml
+    path: ./ruleset/battlenet.yaml
+    url: https://cdn.jsdelivr.net/gh/Loyalsoldier/clash-rules@release/battlenet.yaml
+    interval: 86400
+
+# =========================
+# 规则 rules
+# =========================
+rules:
+  - DOMAIN-SUFFIX,taobao.com,DIRECT
+  - DOMAIN-SUFFIX,alicdn.com,DIRECT
+  - DOMAIN-SUFFIX,alipay.com,DIRECT
+  - RULE-SET,steam_domain,🎯 全球直连
+  - RULE-SET,epic_domain,🎯 全球直连
+  - RULE-SET,battlenet_domain,🎯 全球直连
+  - RULE-SET,steam_ip,🎯 全球直连
+  - RULE-SET,geosite-cn,🎯 全球直连
+  - RULE-SET,geosite-gfw,🚀 节点选择
+  - RULE-SET,geoip-cn,🎯 全球直连
+  - MATCH,🚀 节点选择
